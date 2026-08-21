@@ -10,7 +10,7 @@ on:
 
 env:
   BUILD_TYPE: Debug
-  THUNDER_REF: "R4.4.1"
+  THUNDER_REF: "R4.4.6"
   INTERFACES_REF: "develop"
   AUTOMATICS_UNAME: ${{ secrets.AUTOMATICS_UNAME}}
   AUTOMATICS_PASSCODE: ${{ secrets. AUTOMATICS_PASSCODE}}
@@ -95,14 +95,14 @@ jobs:
         with:
           repository: rdkcentral/ThunderTools
           path: ThunderTools
-          ref: R4.4.3
+          ref: R4.4.6
 
       - name: Checkout entservices-testframework
         uses: actions/checkout@v3
         with:
           repository: rdkcentral/entservices-testframework
           path: entservices-testframework
-          ref: 1.0.1
+          ref: 2.0.0
 
       - name: Checkout entservices-deviceanddisplay
         uses: actions/checkout@v3
@@ -125,12 +125,6 @@ jobs:
           path: entservices-infra
           ref: develop
 
-      - name: Apply  ThunderTools
-        run: |
-          cd $GITHUB_WORKSPACE/ThunderTools
-          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/00010-R4.4-Add-support-for-project-dir.patch
-          cd -
-
       - name: Build ThunderTools
         run: >
           cmake
@@ -148,11 +142,7 @@ jobs:
       - name: Apply patches Thunder
         run: |
           cd $GITHUB_WORKSPACE/Thunder
-          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/Use_Legact_Alt_Based_On_ThunderTools_R4.4.3.patch
-          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/error_code_R4_4.patch
-          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/1004-Add-support-for-project-dir.patch
-          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/RDKEMW-733-Add-ENTOS-IDS.patch
-          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/Jsonrpc_dynamic_error_handling.patch
+          patch -p1 < $GITHUB_WORKSPACE/entservices-testframework/patches/LockFixedBuffer_compat_R4.4.6.patch
           cd -
       - name: Build Thunder
         run: >
@@ -167,6 +157,7 @@ jobs:
           -DBINDING=127.0.0.1
           -DPORT=9998
           -DEXCEPTIONS_ENABLE=ON
+          -DCONFIG_PATH="$GITHUB_WORKSPACE/install/etc/WPEFramework/plugins"
           &&
           cmake --build build/Thunder -j8
           &&
@@ -337,7 +328,6 @@ jobs:
           -DEXCEPTIONS_ENABLE=ON
           -fprofile-arcs
           -ftest-coverage
-          -DUSE_THUNDER_R4=ON
           -DTHUNDER_VERSION=4
           -DTHUNDER_VERSION_MAJOR=4
           -DTHUNDER_VERSION_MINOR=4
@@ -418,7 +408,6 @@ jobs:
           -DEXCEPTIONS_ENABLE=ON
           -fprofile-arcs
           -ftest-coverage
-          -DUSE_THUNDER_R4=ON
           -DTHUNDER_VERSION=4
           -DTHUNDER_VERSION_MAJOR=4
           -DTHUNDER_VERSION_MINOR=4
