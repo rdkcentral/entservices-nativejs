@@ -10,16 +10,22 @@ on:
 
 jobs:
   trigger-nativejs-l1:
-    uses: ./.github/workflows/L1-tests.yml
-    with:
-      caller_source: local
+    if: false
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Disabled NativeJS L1 trigger
+        run: echo "NativeJS L1 tests are disabled until they exist."
 
   trigger-nativejs-l2:
-    uses: ./.github/workflows/L2-tests.yml
-    with:
-      caller_source: local
+    if: false
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Disabled NativeJS L2 trigger
+        run: echo "NativeJS L2 tests are disabled until they exist."
 
   trigger-nativejs-l2-oop:
-    uses: ./.github/workflows/L2-tests-oop.yml
-    with:
-      caller_source: local
+    if: false
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Disabled NativeJS L2 OOP trigger
+        run: echo "NativeJS L2 OOP tests are disabled until they exist."
