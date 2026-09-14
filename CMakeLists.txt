@@ -20,6 +20,7 @@
 cmake_minimum_required(VERSION 3.3)
 
 find_package(WPEFramework)
+find_package(${NAMESPACE}Helpers REQUIRED)
 
 option(PLUGIN_NATIVEJS "Include NativeJS plugin" ON)
 
