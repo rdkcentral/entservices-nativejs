@@ -45,6 +45,8 @@ git clone --branch develop https://github.com/rdkcentral/entservices-helpers.git
 
 git clone --branch 2.0.0 https://github.com/rdkcentral/entservices-testframework.git
 
+git clone --branch develop https://github.com/rdkcentral/rdkNativeScript.git
+
 ############################
 # Build Thunder-Tools
 echo "======================================================================================"
@@ -125,6 +127,19 @@ cmake -G Ninja -S entservices-helpers -B build/entservices-helpers \
     "-DCMAKE_CXX_FLAGS=-I$GITHUB_WORKSPACE/entservices-testframework/Tests/mocks -I$GITHUB_WORKSPACE/entservices-testframework/Tests/headers -I$GITHUB_WORKSPACE/entservices-testframework/Tests/headers/rdk/iarmbus -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/Iarm.h -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/tr181api.h" \
 
 cmake --build build/entservices-helpers --target install
+
+############################
+# Build rdkNativeScript
+echo "======================================================================================"
+echo "building rdkNativeScript"
+cmake -G Ninja -S rdkNativeScript -B build/rdkNativeScript \
+    -DBUILD_JSRUNTIME_APP=OFF \
+    -DBUILD_JSRUNTIME_CLIENT=OFF \
+    -DBUILD_JSRUNTIME_CONTAINER=OFF \
+    -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr" \
+    -DPKG_CONFIG_SYSROOT_DIR=/ \
+
+cmake --build build/rdkNativeScript --target install
 
 
 

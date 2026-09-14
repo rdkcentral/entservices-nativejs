@@ -14,7 +14,7 @@ set_target_properties(${MODULE_NAME} PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES)
 
-target_include_directories(${MODULE_NAME} PRIVATE $ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/jsruntime ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${MODULE_NAME} PRIVATE $ENV{PKG_CONFIG_SYSROOT_DIR}/usr/include/jsruntime ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../rdkNativeScript/include ${CMAKE_CURRENT_SOURCE_DIR}/../rdkNativeScript/include/jsc)
 
 target_link_libraries(${MODULE_NAME} PRIVATE ${NAMESPACE}Plugins::${NAMESPACE}Plugins ${NAMESPACE}Definitions::${NAMESPACE}Definitions ${NAMESPACE}::${NAMESPACE}Helpers -L${CMAKE_CURRENT_SOURCE_DIR}/../../build/NativeJS -L$ENV{PKG_CONFIG_SYSROOT_DIR}/usr/lib/javascriptcore -lJSRuntimeJSC -lJavaScriptCore)
 
