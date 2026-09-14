@@ -9,21 +9,21 @@ on:
     branches: [ main, develop, 'sprint/**', 'release/**' ]
 
 jobs:
-  trigger-nativejs-l1:
+  trigger-L1:
     if: false
     runs-on: ubuntu-22.04
     steps:
       - name: Disabled NativeJS L1 trigger
         run: echo "NativeJS L1 tests are disabled until they exist."
 
-  trigger-nativejs-l2:
+  trigger-L2:
     if: false
     runs-on: ubuntu-22.04
     steps:
       - name: Disabled NativeJS L2 trigger
         run: echo "NativeJS L2 tests are disabled until they exist."
 
-  trigger-nativejs-l2-oop:
+  trigger-L2-OOP:
     if: false
     runs-on: ubuntu-22.04
     steps:

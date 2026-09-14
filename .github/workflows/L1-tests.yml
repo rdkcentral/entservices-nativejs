@@ -1,4 +1,4 @@
-name: NativeJS-L1-tests
+name: L1-tests
 
 on:
   workflow_call:
@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  nativejs-l1-scaffold:
+  L1-scaffold:
     name: NativeJS L1 test scaffold
     runs-on: ubuntu-22.04
     steps:
