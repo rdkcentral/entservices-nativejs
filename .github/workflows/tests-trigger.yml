@@ -1,6 +1,6 @@
 permissions:
   contents: read
-name: main-workflow
+name: nativejs-test-trigger
 
 on:
   push:
@@ -9,17 +9,17 @@ on:
     branches: [ main, develop, 'sprint/**', 'release/**' ]
 
 jobs:
-  trigger-L1:
+  trigger-nativejs-l1:
     uses: ./.github/workflows/L1-tests.yml
     with:
       caller_source: local
 
-  trigger-L2:
+  trigger-nativejs-l2:
     uses: ./.github/workflows/L2-tests.yml
     with:
       caller_source: local
 
-  trigger-L2-OOP:
+  trigger-nativejs-l2-oop:
     uses: ./.github/workflows/L2-tests-oop.yml
     with:
       caller_source: local
