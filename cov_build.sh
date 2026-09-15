@@ -15,6 +15,7 @@ cmake -G Ninja -S "$GITHUB_WORKSPACE" -B build/nativejs \
 -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake" \
 -DCMAKE_VERBOSE_MAKEFILE=ON \
 -DPLUGIN_NATIVEJS=ON \
+-DNATIVEJS_HOST_BUILD=ON \
 -DCMAKE_CXX_FLAGS="-DEXCEPTIONS_ENABLE=ON \
 -I /usr/include/libdrm \
 -Wall -Werror -Wno-error=format \

@@ -129,18 +129,57 @@ cmake -G Ninja -S entservices-helpers -B build/entservices-helpers \
 cmake --build build/entservices-helpers --target install
 
 ############################
-# Build rdkNativeScript
+# Build the NativeJS API shim used by the native Coverity build. The complete
+# runtime requires the RDK sysroot (custom JavaScriptCore, pxCore, and rtCore).
 echo "======================================================================================"
-echo "building rdkNativeScript"
-cmake -G Ninja -S rdkNativeScript -B build/rdkNativeScript \
-    -DJSRUNTIME_ENGINE_NAME=jsc \
-    -DBUILD_JSRUNTIME_APP=OFF \
-    -DBUILD_JSRUNTIME_CLIENT=OFF \
-    -DBUILD_JSRUNTIME_CONTAINER=OFF \
-    -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr" \
-    -DPKG_CONFIG_SYSROOT_DIR=/ \
+echo "building rdkNativeScript API shim"
+mkdir -p build/rdkNativeScript
+cat > build/rdkNativeScript/NativeJSRuntimeStub.cpp <<'EOF'
+#include "ModuleSettings.h"
+#include "NativeJSRenderer.h"
 
-cmake --build build/rdkNativeScript --target install
+std::string JsRuntime::DEFAULT_USER_AGENT;
+
+ModuleSettings::ModuleSettings()
+        : enableHttp(false), enableXHR(false), enableWebSocket(false),
+            enableWebSocketEnhanced(false), enableFetch(false), enableJSDOM(false),
+            enableWindow(false), enablePlayer(false), enableMiniJSDOM(false) {}
+ModuleSettings::ModuleSettings(ModuleSettings& settings)
+        : enableHttp(settings.enableHttp), enableXHR(settings.enableXHR),
+            enableWebSocket(settings.enableWebSocket),
+            enableWebSocketEnhanced(settings.enableWebSocketEnhanced),
+            enableFetch(settings.enableFetch), enableJSDOM(settings.enableJSDOM),
+            enableWindow(settings.enableWindow), enablePlayer(settings.enablePlayer),
+            enableMiniJSDOM(settings.enableMiniJSDOM) {}
+void ModuleSettings::fromString(std::string& options) {
+        enableHttp = options.find("http") != std::string::npos;
+        enableXHR = options.find("xhr") != std::string::npos;
+        enableWebSocket = options.find("ws") != std::string::npos;
+        enableWebSocketEnhanced = options.find("wsenhanced") != std::string::npos;
+        enableFetch = options.find("fetch") != std::string::npos;
+        enableMiniJSDOM = options.find("minijsdom") != std::string::npos;
+        enableJSDOM = !enableMiniJSDOM && options.find("jsdom") != std::string::npos;
+        enableWindow = options.find("window") != std::string::npos;
+        enablePlayer = options.find("player") != std::string::npos;
+}
+
+namespace JsRuntime {
+NativeJSRenderer::NativeJSRenderer(std::string) {}
+NativeJSRenderer::~NativeJSRenderer() = default;
+bool NativeJSRenderer::terminate() { return true; }
+void NativeJSRenderer::run() {}
+bool NativeJSRenderer::runApplication(uint32_t, std::string) { return true; }
+bool NativeJSRenderer::runJavaScript(uint32_t, std::string) { return true; }
+uint32_t NativeJSRenderer::createApplication(ModuleSettings&, std::string) { return 1; }
+bool NativeJSRenderer::terminateApplication(uint32_t) { return true; }
+std::list<ApplicationDetails> NativeJSRenderer::getApplications() { return {}; }
+}
+EOF
+
+c++ -std=c++17 -fPIC -shared \
+    -IrdkNativeScript/include \
+    build/rdkNativeScript/NativeJSRuntimeStub.cpp \
+    -o "$GITHUB_WORKSPACE/install/usr/lib/libJSRuntimeJSC.so"
 
 
 
