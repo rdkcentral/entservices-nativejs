@@ -133,6 +133,7 @@ cmake --build build/entservices-helpers --target install
 echo "======================================================================================"
 echo "building rdkNativeScript"
 cmake -G Ninja -S rdkNativeScript -B build/rdkNativeScript \
+    -DJSRUNTIME_ENGINE_NAME=jsc \
     -DBUILD_JSRUNTIME_APP=OFF \
     -DBUILD_JSRUNTIME_CLIENT=OFF \
     -DBUILD_JSRUNTIME_CONTAINER=OFF \
