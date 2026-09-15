@@ -8,14 +8,14 @@ on:
 
 jobs:
   build-entservices-on-pr:
-    name: Build entservices-infra component in github rdkcentral
+    name: Build NativeJS component
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/rdkcentral/docker-rdk-ci:latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: native build
         run: |

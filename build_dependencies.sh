@@ -39,9 +39,13 @@ cd Thunder
 git checkout $THUNDER_COMMIT_SHA
 cd ..
 
-git clone --branch main https://github.com/rdkcentral/entservices-apis.git
+git clone --branch 4.2.0 https://github.com/rdkcentral/entservices-apis.git
+
+git clone --branch develop https://github.com/rdkcentral/entservices-helpers.git
 
 git clone --branch 2.0.0 https://github.com/rdkcentral/entservices-testframework.git
+
+git clone --branch develop https://github.com/rdkcentral/rdkNativeScript.git
 
 ############################
 # Build Thunder-Tools
@@ -96,89 +100,89 @@ cmake -G Ninja -S entservices-apis  -B build/entservices-apis \
 
 cmake --build build/entservices-apis --target install
 
-
+############################
+# Prepare compatibility headers required by entservices-helpers.
+cd "$GITHUB_WORKSPACE/entservices-testframework/Tests"
+mkdir -p headers/rdk/iarmbus
+touch headers/secure_wrapper.h
+touch headers/wpa_ctrl.h
+touch headers/rdk_logger_milestone.h
+touch headers/iarm.h
+touch headers/tr181api.h
+touch headers/rdk/iarmbus/libIARM.h
+touch headers/rdk/iarmbus/libIBus.h
+cd "$GITHUB_WORKSPACE"
 
 ############################
-# generating extrnal headers
-cd $GITHUB_WORKSPACE
-cd entservices-testframework/Tests
-echo " Empty mocks creation to avoid compilation errors"
+# Build entservices-helpers
 echo "======================================================================================"
-mkdir -p headers
-mkdir -p headers/audiocapturemgr
-mkdir -p headers/rdk/ds
-mkdir -p headers/rdk/iarmbus
-mkdir -p headers/rdk/iarmmgrs-hal
-mkdir -p headers/rdk/halif/
-mkdir -p headers/rdk/halif/deepsleep-manager
-mkdir -p headers/ccec/drivers
-mkdir -p headers/network
-mkdir -p headers/proc
-mkdir -p headers/libusb
-mkdir -p headers/Dobby
-mkdir -p headers/Dobby/Public/Dobby
-mkdir -p headers/Dobby/IpcService
-echo "dir created successfully"
-echo "======================================================================================"
+echo "building entservices-helpers"
+cmake -G Ninja -S entservices-helpers -B build/entservices-helpers \
+    -DEXCEPTIONS_ENABLE=ON \
+    -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr" \
+    -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake" \
+    -DUSE_THUNDER_R4=ON \
+    -DHIDE_NON_EXTERNAL_SYMBOLS=OFF \
+    -DPLUGIN_HELPERS=ON \
+    "-DCMAKE_CXX_FLAGS=-I$GITHUB_WORKSPACE/entservices-testframework/Tests/mocks -I$GITHUB_WORKSPACE/entservices-testframework/Tests/headers -I$GITHUB_WORKSPACE/entservices-testframework/Tests/headers/rdk/iarmbus -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/Iarm.h -include $GITHUB_WORKSPACE/entservices-testframework/Tests/mocks/tr181api.h" \
 
-echo "======================================================================================"
-echo "empty headers creation"
-cd headers
-echo "current working dir: "${PWD}
-touch audiocapturemgr/audiocapturemgr_iarm.h
-touch ccec/drivers/CecIARMBusMgr.h
-touch rdk/ds/audioOutputPort.hpp
-touch rdk/ds/compositeIn.hpp
-touch rdk/ds/dsDisplay.h
-touch rdk/ds/dsError.h
-touch rdk/ds/dsMgr.h
-touch rdk/ds/dsTypes.h
-touch rdk/ds/dsUtl.h
-touch rdk/ds/exception.hpp
-touch rdk/ds/hdmiIn.hpp
-touch rdk/ds/host.hpp
-touch rdk/ds/list.hpp
-touch rdk/ds/manager.hpp
-touch rdk/ds/sleepMode.hpp
-touch rdk/ds/videoDevice.hpp
-touch rdk/ds/videoOutputPort.hpp
-touch rdk/ds/videoOutputPortConfig.hpp
-touch rdk/ds/videoOutputPortType.hpp
-touch rdk/ds/videoResolution.hpp
-touch rdk/iarmbus/libIARM.h
-touch rdk/iarmbus/libIBus.h
-touch rdk/iarmbus/libIBusDaemon.h
-touch rdk/halif/deepsleep-manager/deepSleepMgr.h
-touch rdk/iarmmgrs-hal/mfrMgr.h
-touch rdk/iarmmgrs-hal/pwrMgr.h
-touch rdk/iarmmgrs-hal/sysMgr.h
-touch network/wifiSrvMgrIarmIf.h
-touch network/netsrvmgrIarm.h
-touch libudev.h
-touch libusb/libusb.h
-touch rfcapi.h
-touch rbus.h
-touch telemetry_busmessage_sender.h
-touch maintenanceMGR.h
-touch pkg.h
-touch edid-parser.hpp
-touch secure_wrapper.h
-touch wpa_ctrl.h
-touch proc/readproc.h
-touch btmgr.h
-touch rdk_logger_milestone.h
-touch audioOutputPortType.hpp
-touch audioOutputPortConfig.hpp
-touch tr181api.h
-touch dsRpc.h
-touch Dobby/DobbyProtocol.h
-touch Dobby/DobbyProxy.h
-touch Dobby/Public/Dobby/IDobbyProxy.h
-touch Dobby/IpcService/IpcFactory.h
-echo "files created successfully"
-echo "======================================================================================"
+cmake --build build/entservices-helpers --target install
 
-cd ../../
+############################
+# Build the NativeJS API shim used by the native Coverity build. The complete
+# runtime requires the RDK sysroot (custom JavaScriptCore, pxCore, and rtCore).
+echo "======================================================================================"
+echo "building rdkNativeScript API shim"
+mkdir -p build/rdkNativeScript
+cat > build/rdkNativeScript/NativeJSRuntimeStub.cpp <<'EOF'
+#include "ModuleSettings.h"
+#include "NativeJSRenderer.h"
+
+std::string JsRuntime::DEFAULT_USER_AGENT;
+
+ModuleSettings::ModuleSettings()
+        : enableHttp(false), enableXHR(false), enableWebSocket(false),
+            enableWebSocketEnhanced(false), enableFetch(false), enableJSDOM(false),
+            enableWindow(false), enablePlayer(false), enableMiniJSDOM(false) {}
+ModuleSettings::ModuleSettings(ModuleSettings& settings)
+        : enableHttp(settings.enableHttp), enableXHR(settings.enableXHR),
+            enableWebSocket(settings.enableWebSocket),
+            enableWebSocketEnhanced(settings.enableWebSocketEnhanced),
+            enableFetch(settings.enableFetch), enableJSDOM(settings.enableJSDOM),
+            enableWindow(settings.enableWindow), enablePlayer(settings.enablePlayer),
+            enableMiniJSDOM(settings.enableMiniJSDOM) {}
+void ModuleSettings::fromString(std::string& options) {
+        enableHttp = options.find("http") != std::string::npos;
+        enableXHR = options.find("xhr") != std::string::npos;
+        enableWebSocket = options.find("ws") != std::string::npos;
+        enableWebSocketEnhanced = options.find("wsenhanced") != std::string::npos;
+        enableFetch = options.find("fetch") != std::string::npos;
+        enableMiniJSDOM = options.find("minijsdom") != std::string::npos;
+        enableJSDOM = !enableMiniJSDOM && options.find("jsdom") != std::string::npos;
+        enableWindow = options.find("window") != std::string::npos;
+        enablePlayer = options.find("player") != std::string::npos;
+}
+
+namespace JsRuntime {
+NativeJSRenderer::NativeJSRenderer(std::string) {}
+NativeJSRenderer::~NativeJSRenderer() = default;
+bool NativeJSRenderer::terminate() { return true; }
+void NativeJSRenderer::run() {}
+bool NativeJSRenderer::runApplication(uint32_t, std::string) { return true; }
+bool NativeJSRenderer::runJavaScript(uint32_t, std::string) { return true; }
+uint32_t NativeJSRenderer::createApplication(ModuleSettings&, std::string) { return 1; }
+bool NativeJSRenderer::terminateApplication(uint32_t) { return true; }
+std::list<ApplicationDetails> NativeJSRenderer::getApplications() { return {}; }
+}
+EOF
+
+c++ -std=c++17 -fPIC -shared \
+    -IrdkNativeScript/include \
+    build/rdkNativeScript/NativeJSRuntimeStub.cpp \
+    -o "$GITHUB_WORKSPACE/install/usr/lib/libJSRuntimeJSC.so"
+
+
+
 cp -r /usr/include/gstreamer-1.0/gst /usr/include/glib-2.0/* /usr/lib/x86_64-linux-gnu/glib-2.0/include/* /usr/local/include/trower-base64/base64.h .
 
 ls -la ${GITHUB_WORKSPACE}
