@@ -8,6 +8,16 @@ ls -la ${GITHUB_WORKSPACE}
 # Build entservices-infra
 echo "buliding entservices-infra"
 
+if [ ! -e "$GITHUB_WORKSPACE/../entservices-infra" ]; then
+    ln -s "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/../entservices-infra" || true
+fi
+if [ ! -e "$GITHUB_WORKSPACE/../entservices-testframework" ]; then
+    ln -s "$GITHUB_WORKSPACE/entservices-testframework" "$GITHUB_WORKSPACE/../entservices-testframework" || true
+fi
+if [ ! -e "$GITHUB_WORKSPACE/../Thunder" ]; then
+    ln -s "$GITHUB_WORKSPACE/Thunder" "$GITHUB_WORKSPACE/../Thunder" || true
+fi
+
 cd ${GITHUB_WORKSPACE}
 cmake -G Ninja -S "$GITHUB_WORKSPACE" -B build/entservices-infra \
 -DUSE_THUNDER_R4=ON \
@@ -57,7 +67,7 @@ cmake -G Ninja -S "$GITHUB_WORKSPACE" -B build/entservices-infra \
 -DENABLE_SYSTEM_GET_STORE_DEMO_LINK -DENABLE_DEEP_SLEEP \
 -DENABLE_SET_WAKEUP_SRC_CONFIG -DENABLE_THERMAL_PROTECTION \
 -DUSE_DRM_SCREENCAPTURE -DHAS_API_SYSTEM -DHAS_API_POWERSTATE \
--DHAS_RBUS -DDISABLE_SECURITY_TOKEN -DENABLE_DEVICE_MANUFACTURER_INFO  -DTHUNDER_VERSION=4 -DTHUNDER_VERSION_MAJOR=4 -DTHUNDER_VERSION_MINOR=4" \
+-DHAS_RBUS -DDISABLE_SECURITY_TOKEN -DENABLE_DEVICE_MANUFACTURER_INFO -DTHUNDER_VERSION=4 -DTHUNDER_VERSION_MAJOR=4 -DTHUNDER_VERSION_MINOR=4" \
 
 
 cmake --build build/entservices-infra --target install
